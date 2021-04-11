@@ -10,7 +10,6 @@ import com.csetlu.dontforgettotoit.Adapter.ViecCanLamA;
 import com.csetlu.dontforgettotoit.Controller.CoSoDuLieu;
 import com.csetlu.dontforgettotoit.Model.ViecCanLamM;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.csetlu.dontforgettotoit.R.id.tasksRecyclerView;
@@ -27,8 +26,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getSupportActionBar().hide();
-
-        dsCongViec = new ArrayList<>();
 
         VCL_RecyclerView = findViewById(tasksRecyclerView);
         VCL_RecyclerView.setLayoutManager(new LinearLayoutManager(this));
