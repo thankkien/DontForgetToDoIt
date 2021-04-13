@@ -12,6 +12,7 @@ public class ViecCanLamM {
     public int layMaCV() {
         return maCV;
     }
+
     public void ganMaCV(int maCV) {
         this.maCV = maCV;
     }
@@ -19,6 +20,7 @@ public class ViecCanLamM {
     public int layTT() {
         return trangThai;
     }
+
     public void ganTT(int trangThai) {
         this.trangThai = trangThai;
     }
@@ -26,6 +28,7 @@ public class ViecCanLamM {
     public String layCV() {
         return congViec;
     }
+
     public void ganCV(String congViec) {
         this.congViec = congViec;
     }
@@ -33,6 +36,7 @@ public class ViecCanLamM {
     public String layThoiGian() {
         return thoiGian;
     }
+
     public void ganThoiGian(String thoiGian) {
         this.thoiGian = thoiGian;
     }
