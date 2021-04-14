@@ -1,4 +1,4 @@
-package com.csetlu.dontforgettotoit.Controller;
+package com.csetlu.dontforgettodoit.Controller;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -6,21 +6,22 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.csetlu.dontforgettotoit.Model.ViecCanLamM;
+import com.csetlu.dontforgettodoit.Model.ViecCanLamM;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class CoSoDuLieu extends SQLiteOpenHelper {
 
-    private static final int PHIENBAN = 2;
+    private static final int PHIENBAN = 3;
     private static final String CSDL = "btlandroid";
     private static final String BANG = "nhacviec";
     private static final String MACV = "ma_cv";
     private static final String CONGVIEC = "congViec";
     private static final String TRANGTHAI = "trangThai";
+    private static final String NGAY = "ngay";
     private static final String THOIGIAN = "thoiGian";
-    private static final String TAOBANG = "CREATE TABLE "+BANG+" ("+MACV+" INTEGER PRIMARY KEY AUTOINCREMENT, "+CONGVIEC+" TEXT, "+TRANGTHAI+" INTEGER, "+THOIGIAN+" TEXT)";
+    private static final String TAOBANG = "CREATE TABLE "+BANG+" ("+MACV+" INTEGER PRIMARY KEY AUTOINCREMENT, "+CONGVIEC+" TEXT, "+TRANGTHAI+" INTEGER, "+NGAY+" TEXT, "+THOIGIAN+" TEXT)";
     private static final String XOABANG = "DROP TABLE IF EXISTS "+BANG;
     private SQLiteDatabase db;
 
@@ -46,12 +47,13 @@ public class CoSoDuLieu extends SQLiteOpenHelper {
         db = this.getWritableDatabase();
     }
 
-    public void themCongViec(ViecCanLamM cv){
+    public long themCongViec(ViecCanLamM cv){
         ContentValues banGhi = new ContentValues();
         banGhi.put(CONGVIEC, cv.layCV());
+        banGhi.put(NGAY, cv.layNgay());
         banGhi.put(THOIGIAN, cv.layThoiGian());
         banGhi.put(TRANGTHAI, 0);
-        db.insert(BANG, null, banGhi);
+        return db.insert(BANG, null, banGhi);
     }
 
     public List<ViecCanLamM> layDsCongViec(){
@@ -65,6 +67,7 @@ public class CoSoDuLieu extends SQLiteOpenHelper {
                     ViecCanLamM cv = new ViecCanLamM();
                     cv.ganMaCV(conTro.getInt(conTro.getColumnIndex(MACV)));
                     cv.ganCV(conTro.getString(conTro.getColumnIndex(CONGVIEC)));
+                    cv.ganNgay(conTro.getString(conTro.getColumnIndex(NGAY)));
                     cv.ganThoiGian(conTro.getString(conTro.getColumnIndex(THOIGIAN)));
                     cv.ganTT(conTro.getInt(conTro.getColumnIndex(TRANGTHAI)));
                     dsCongViec.add(cv);
@@ -74,17 +77,25 @@ public class CoSoDuLieu extends SQLiteOpenHelper {
         return dsCongViec;
     }
 
-    public void suaCongViec(int maCV, String congViec){
+    public void suaCongViec(ViecCanLamM congViec){
         ContentValues banGhi = new ContentValues();
-        banGhi.put(CONGVIEC, congViec);
-        db.update(BANG, banGhi, MACV + "=?", new String[] {String.valueOf(maCV)});
+        banGhi.put(CONGVIEC, congViec.layCV());
+        banGhi.put(NGAY, congViec.layNgay());
+        banGhi.put(THOIGIAN, congViec.layThoiGian());
+        db.update(BANG, banGhi, MACV + "=?", new String[] {String.valueOf(congViec.layMaCV())});
     }
 
-    public void suaThoiGian(int maCV, String thoiGian){
-        ContentValues banGhi = new ContentValues();
-        banGhi.put(THOIGIAN, thoiGian);
-        db.update(BANG, banGhi, MACV + "=?", new String[] {String.valueOf(maCV)});
-    }
+//    public void suaNgay(int maCV, String ngay){
+//        ContentValues banGhi = new ContentValues();
+//        banGhi.put(NGAY, ngay);
+//        db.update(BANG, banGhi, MACV + "=?", new String[] {String.valueOf(maCV)});
+//    }
+//
+//    public void suaThoiGian(int maCV, String thoiGian){
+//        ContentValues banGhi = new ContentValues();
+//        banGhi.put(THOIGIAN, thoiGian);
+//        db.update(BANG, banGhi, MACV + "=?", new String[] {String.valueOf(maCV)});
+//    }
 
     public void chuyenTrangThai(int maCV, int trangThai){
         ContentValues banGhi = new ContentValues();

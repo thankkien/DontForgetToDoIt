@@ -1,6 +1,5 @@
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/task_Layout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -11,18 +10,32 @@
 
     <RelativeLayout
         android:id="@+id/backgroundCongViec"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="8dp">
+        android:padding="6dp">
 
         <TextView
             android:id="@+id/textViewCongViec"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingStart="8dp"
+            android:background="@color/md_white_1000"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
             android:text="Something..."
-            android:textSize="18sp" />
+            android:textColor="?attr/colorOnPrimary"
+            android:textSize="22sp" />
 
+        <TextView
+            android:id="@+id/textViewNgayGio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/textViewCongViec"
+            android:background="@color/md_white_1000"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            android:text="dd/MM/yyyy HH:mm"
+            android:textAlignment="textEnd"
+            android:textSize="18sp" />
     </RelativeLayout>
 
 </androidx.cardview.widget.CardView>

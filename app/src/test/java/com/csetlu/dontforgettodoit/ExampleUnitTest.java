@@ -1,4 +1,4 @@
-package com.csetlu.dontforgettotoit;
+package com.csetlu.dontforgettodoit;
 
 import org.junit.Test;
 

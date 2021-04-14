@@ -1,4 +1,4 @@
-package com.csetlu.dontforgettotoit;
+package com.csetlu.dontforgettodoit;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
@@ -8,14 +8,16 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
-import com.csetlu.dontforgettotoit.Adapter.ViecCanLamA;
-import com.csetlu.dontforgettotoit.Model.ViecCanLamM;
+import com.csetlu.dontforgettodoit.Adapter.ViecCanLamA;
+import com.csetlu.dontforgettodoit.Model.ViecCanLamM;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import java.text.SimpleDateFormat;
@@ -23,14 +25,16 @@ import java.util.Calendar;
 
 public class AddNewActivity extends BottomSheetDialogFragment {
 
-    ViecCanLamM congViecMoi = new ViecCanLamM();
+    MainActivity activity;
     ViecCanLamA adapter;
+    ViecCanLamM congViecMoi = new ViecCanLamM();
     Button buttonSave;
     EditText editTextCV;
     TextView textViewDate, textViewTime;
 
-    public AddNewActivity(ViecCanLamA adapter) {
-        this.adapter = adapter;
+    public AddNewActivity(MainActivity activity) {
+        this.activity = activity;
+        this.adapter = activity.adapter();
     }
 
     @Override
@@ -42,6 +46,8 @@ public class AddNewActivity extends BottomSheetDialogFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.activity_add_new, container, false);
+        getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+
         buttonSave = v.findViewById(R.id.btnSave);
         editTextCV = v.findViewById(R.id.editTextTask);
         textViewDate = v.findViewById(R.id.editTextDate);
@@ -52,14 +58,10 @@ public class AddNewActivity extends BottomSheetDialogFragment {
             }
 
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().equals("")) {
-                    buttonSave.setEnabled(false);
-                } else {
-                    buttonSave.setEnabled(true);
-                }
             }
 
             public void afterTextChanged(Editable s) {
+                congViecMoi.ganCV(editTextCV.getText().toString());
             }
         });
 
@@ -76,6 +78,8 @@ public class AddNewActivity extends BottomSheetDialogFragment {
                         calendar.set(year, month, dayOfMonth);
                         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
                         textViewDate.setText(simpleDateFormat.format(calendar.getTime()));
+
+                        congViecMoi.ganNgay(textViewDate.getText().toString());
                     }
                 }, nam, thang, ngay);
                 datePickerDialog.show();
@@ -94,6 +98,8 @@ public class AddNewActivity extends BottomSheetDialogFragment {
                         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm");
                         calendar.set(0, 0, 0, hourOfDay, minute);
                         textViewTime.setText(simpleDateFormat.format(calendar.getTime()));
+
+                        congViecMoi.ganThoiGian(textViewTime.getText().toString());
                     }
                 }, gio, phut, true);
                 timePickerDialog.show();
@@ -103,8 +109,18 @@ public class AddNewActivity extends BottomSheetDialogFragment {
         buttonSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                congViecMoi.ganCV(editTextCV.getText().toString());
-                adapter.themCongViec(congViecMoi);
+                if (editTextCV.getText().toString().equals("")) {
+                    Toast.makeText(activity.getApplicationContext(), "Task must not be left blank", Toast.LENGTH_SHORT).show();
+                }
+                else if (textViewDate.getText().toString().equals("")) {
+                    Toast.makeText(activity.getApplicationContext(), "Date must not be left blank", Toast.LENGTH_SHORT).show();
+                }
+                else if (textViewTime.getText().toString().equals("")) {
+                    Toast.makeText(activity.getApplicationContext(), "Time must not be left blank", Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    adapter.themCongViec(congViecMoi);
+                }
                 dismiss();
             }
         });
