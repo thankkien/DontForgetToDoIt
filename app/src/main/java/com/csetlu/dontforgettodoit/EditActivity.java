@@ -1,11 +1,7 @@
 package com.csetlu.dontforgettodoit;
 
-import android.app.AlarmManager;
 import android.app.DatePickerDialog;
-import android.app.PendingIntent;
 import android.app.TimePickerDialog;
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -23,11 +19,8 @@ import com.csetlu.dontforgettodoit.Adapter.ViecCanLamA;
 import com.csetlu.dontforgettodoit.Model.ViecCanLamM;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
-import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 
 public class EditActivity extends BottomSheetDialogFragment {
 
@@ -137,34 +130,11 @@ public class EditActivity extends BottomSheetDialogFragment {
                     Toast.makeText(activity.getApplicationContext(), "Time must not be left blank", Toast.LENGTH_SHORT).show();
                 } else {
                     adapter.suaCongViec(congViecCu, congViecMoi);
-                    setAlarm(congViecMoi.layCV(),congViecMoi.layNgay(),congViecMoi.layThoiGian());
                 }
                 dismiss();
             }
         });
 
         return v;
-    }
-    private void setAlarm(String text, String date, String time) {
-        AlarmManager am = (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
-
-        Intent intent = new Intent(activity.getApplicationContext(), AlarmReceiver.class);
-        intent.putExtra("event", text);
-        intent.putExtra("time", date);
-        intent.putExtra("date", time);
-
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(activity.getApplicationContext(), 0, intent, PendingIntent.FLAG_ONE_SHOT);
-        String dateandtime = date + " " + time;
-        DateFormat formatter = new SimpleDateFormat("d-M-yyyy hh:mm");
-        try {
-            Date date1 = formatter.parse(dateandtime);
-            am.set(AlarmManager.RTC_WAKEUP, date1.getTime(), pendingIntent);
-
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-
-        activity.finish();
-
     }
 }
