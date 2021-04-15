@@ -1,7 +1,12 @@
 package com.csetlu.dontforgettodoit;
 
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
+import android.app.PendingIntent;
+import android.app.Service;
 import android.app.TimePickerDialog;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -20,8 +25,11 @@ import com.csetlu.dontforgettodoit.Adapter.ViecCanLamA;
 import com.csetlu.dontforgettodoit.Model.ViecCanLamM;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 public class AddNewActivity extends BottomSheetDialogFragment {
 
@@ -40,11 +48,12 @@ public class AddNewActivity extends BottomSheetDialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
     }
 
+
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.activity_add_new, container, false);
         getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
@@ -108,23 +117,49 @@ public class AddNewActivity extends BottomSheetDialogFragment {
 
         buttonSave.setOnClickListener(new View.OnClickListener() {
             @Override
+
             public void onClick(View v) {
+                String Text = editTextCV.getText().toString();
+                String date = textViewDate.getText().toString();
+                String time = textViewTime.getText().toString();
                 if (editTextCV.getText().toString().equals("")) {
                     Toast.makeText(activity.getApplicationContext(), "Task must not be left blank", Toast.LENGTH_SHORT).show();
-                }
-                else if (textViewDate.getText().toString().equals("")) {
+                } else if (textViewDate.getText().toString().equals("")) {
                     Toast.makeText(activity.getApplicationContext(), "Date must not be left blank", Toast.LENGTH_SHORT).show();
-                }
-                else if (textViewTime.getText().toString().equals("")) {
+                } else if (textViewTime.getText().toString().equals("")) {
                     Toast.makeText(activity.getApplicationContext(), "Time must not be left blank", Toast.LENGTH_SHORT).show();
-                }
-                else {
+                } else {
                     adapter.themCongViec(congViecMoi);
+                    setAlarm(Text, date, time);
+
+
                 }
                 dismiss();
             }
         });
 
         return v;
+    }
+
+    public void setAlarm(String text, String date, String time) {
+        AlarmManager alarmMgr = (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
+        Intent i = new Intent(activity, AlarmReceiver.class);
+        i.putExtra("event", text);
+        i.putExtra("date", date);
+        i.putExtra("time", time);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                activity, 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
+        String datetime = date + " " + time;
+        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+        try {
+            Date date1 = dateFormat.parse(datetime);
+            alarmMgr.setExact(AlarmManager.RTC_WAKEUP, date1.getTime(), pendingIntent);
+
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+
     }
 }
