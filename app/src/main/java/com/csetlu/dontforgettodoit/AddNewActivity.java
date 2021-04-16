@@ -1,7 +1,11 @@
 package com.csetlu.dontforgettodoit;
 
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -20,8 +24,11 @@ import com.csetlu.dontforgettodoit.Adapter.ViecCanLamA;
 import com.csetlu.dontforgettodoit.Model.ViecCanLamM;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 public class AddNewActivity extends BottomSheetDialogFragment {
 
@@ -42,9 +49,9 @@ public class AddNewActivity extends BottomSheetDialogFragment {
         super.onCreate(savedInstanceState);
     }
 
+
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.activity_add_new, container, false);
         getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
@@ -78,7 +85,6 @@ public class AddNewActivity extends BottomSheetDialogFragment {
                         calendar.set(year, month, dayOfMonth);
                         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
                         textViewDate.setText(simpleDateFormat.format(calendar.getTime()));
-
                         congViecMoi.ganNgay(textViewDate.getText().toString());
                     }
                 }, nam, thang, ngay);
@@ -98,7 +104,6 @@ public class AddNewActivity extends BottomSheetDialogFragment {
                         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm");
                         calendar.set(0, 0, 0, hourOfDay, minute);
                         textViewTime.setText(simpleDateFormat.format(calendar.getTime()));
-
                         congViecMoi.ganThoiGian(textViewTime.getText().toString());
                     }
                 }, gio, phut, true);
@@ -111,20 +116,35 @@ public class AddNewActivity extends BottomSheetDialogFragment {
             public void onClick(View v) {
                 if (editTextCV.getText().toString().equals("")) {
                     Toast.makeText(activity.getApplicationContext(), "Task must not be left blank", Toast.LENGTH_SHORT).show();
-                }
-                else if (textViewDate.getText().toString().equals("")) {
+                } else if (textViewDate.getText().toString().equals("")) {
                     Toast.makeText(activity.getApplicationContext(), "Date must not be left blank", Toast.LENGTH_SHORT).show();
-                }
-                else if (textViewTime.getText().toString().equals("")) {
+                } else if (textViewTime.getText().toString().equals("")) {
                     Toast.makeText(activity.getApplicationContext(), "Time must not be left blank", Toast.LENGTH_SHORT).show();
-                }
-                else {
+                } else {
                     adapter.themCongViec(congViecMoi);
+                    setAlarm(congViecMoi);
                 }
                 dismiss();
             }
         });
-
         return v;
+    }
+
+    public void setAlarm(ViecCanLamM congViec) {
+        AlarmManager alarmMgr = (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(activity, AlarmReceiver.class);
+        intent.putExtra("maCV", congViec.layMaCV());
+        intent.putExtra("congViec", congViec.layCV());
+        intent.putExtra("ngay", congViec.layNgay());
+        intent.putExtra("thoiGian", congViec.layThoiGian());
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(activity, congViec.layMaCV(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        String datetime = congViec.layNgay() + " " + congViec.layThoiGian();
+        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+        try {
+            Date datetimeParsed = dateFormat.parse(datetime);
+            alarmMgr.setExact(AlarmManager.RTC_WAKEUP, datetimeParsed.getTime(), pendingIntent);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
     }
 }

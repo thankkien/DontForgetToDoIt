@@ -1,7 +1,11 @@
 package com.csetlu.dontforgettodoit;
 
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -19,8 +23,11 @@ import com.csetlu.dontforgettodoit.Adapter.ViecCanLamA;
 import com.csetlu.dontforgettodoit.Model.ViecCanLamM;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 public class EditActivity extends BottomSheetDialogFragment {
 
@@ -130,11 +137,29 @@ public class EditActivity extends BottomSheetDialogFragment {
                     Toast.makeText(activity.getApplicationContext(), "Time must not be left blank", Toast.LENGTH_SHORT).show();
                 } else {
                     adapter.suaCongViec(congViecCu, congViecMoi);
+                    editAlarm(congViecMoi);
                 }
                 dismiss();
             }
         });
 
         return v;
+    }
+    public void editAlarm(ViecCanLamM congViec) {
+        AlarmManager alarmMgr = (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(activity, AlarmReceiver.class);
+        intent.putExtra("maCV", congViec.layMaCV());
+        intent.putExtra("congViec", congViec.layCV());
+        intent.putExtra("ngay", congViec.layNgay());
+        intent.putExtra("thoiGian", congViec.layThoiGian());
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(activity, congViec.layMaCV(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        String datetime = congViec.layNgay() + " " + congViec.layThoiGian();
+        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+        try {
+            Date datetimeParsed = dateFormat.parse(datetime);
+            alarmMgr.setExact(AlarmManager.RTC_WAKEUP, datetimeParsed.getTime(), pendingIntent);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
     }
 }

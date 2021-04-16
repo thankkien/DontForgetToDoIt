@@ -1,7 +1,11 @@
 package com.csetlu.dontforgettodoit;
 
+import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -65,10 +69,20 @@ public class TaskOptionActivity extends BottomSheetDialogFragment {
                     }
                 });
                 alertDialogXacNhan.show();
-                dismiss();
+                cancelAlarm();
             }
         });
 
         return v;
+    }
+
+    public void cancelAlarm() {
+        AlarmManager alarmMgr = (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
+        Intent myIntent = new Intent(activity, AlarmReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(activity,
+                congViecDangChon.layMaCV(), myIntent, PendingIntent.FLAG_CANCEL_CURRENT );
+        pendingIntent.cancel();
+        alarmMgr.cancel(pendingIntent);
+        dismiss();
     }
 }
