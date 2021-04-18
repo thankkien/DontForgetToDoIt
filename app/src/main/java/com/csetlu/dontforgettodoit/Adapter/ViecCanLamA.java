@@ -1,5 +1,10 @@
 package com.csetlu.dontforgettodoit.Adapter;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,18 +13,24 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.csetlu.dontforgettodoit.Controller.CoSoDuLieu;
+import com.csetlu.dontforgettodoit.AlarmReceiver;
 import com.csetlu.dontforgettodoit.MainActivity;
 import com.csetlu.dontforgettodoit.Model.ViecCanLamM;
 import com.csetlu.dontforgettodoit.R;
 import com.csetlu.dontforgettodoit.TaskOptionActivity;
 
+import org.jetbrains.annotations.NotNull;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 public class ViecCanLamA extends RecyclerView.Adapter<ViecCanLamA.ViewHolder> {
 
-    private MainActivity activity;
-    private CoSoDuLieu db;
+    private final MainActivity activity;
+    private final CoSoDuLieu db;
     private List<ViecCanLamM> dsCongViec;
 
     public ViecCanLamA(MainActivity activity) {
@@ -28,7 +39,7 @@ public class ViecCanLamA extends RecyclerView.Adapter<ViecCanLamA.ViewHolder> {
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public @NotNull ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.activity_task, parent, false);
         return new ViewHolder(itemView);
@@ -39,32 +50,19 @@ public class ViecCanLamA extends RecyclerView.Adapter<ViecCanLamA.ViewHolder> {
         ViecCanLamM item = dsCongViec.get(position);
         holder.textViewCongViec.setText(item.layCV());
         holder.textViewNgayGio.setText(item.layNgay() + " " + item.layThoiGian());
-//        if (!toBool(item.layTT())){
-//            holder.backgroundCongViec.setBackgroundResource(R.color.design_default_color_background);
-//        } else {
-//            holder.backgroundCongViec.setBackgroundResource(R.color.md_light_green_400);
-//        }
         holder.backgroundCongViec.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                TaskOptionActivity LuaChonBS = new TaskOptionActivity(activity, item);
+                Bundle bundle = new Bundle();
+                bundle.putInt("soThuTu", position);
+                bundle.putInt("maCV", item.layMaCV());
+                bundle.putString("congViec", item.layCV());
+                bundle.putString("ngay", item.layNgay());
+                bundle.putString("thoiGian", item.layThoiGian());
+                TaskOptionActivity LuaChonBS = new TaskOptionActivity(activity, bundle);
                 LuaChonBS.show(activity.getSupportFragmentManager(), LuaChonBS.getTag());
             }
         });
-//        holder.backgroundCongViec.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                if(!toBool(item.layTT())){
-//                    holder.backgroundCongViec.setBackgroundResource(R.color.design_default_color_background);
-//                    item.ganTT(1);
-//                    db.chuyenTrangThai(item.layMaCV(),1);
-//                }else {
-//                    holder.backgroundCongViec.setBackgroundResource(R.color.green_400);
-//                    item.ganTT(0);
-//                    db.chuyenTrangThai(item.layMaCV(),0);
-//                }
-//            }
-//        });
     }
 
     @Override
@@ -72,30 +70,46 @@ public class ViecCanLamA extends RecyclerView.Adapter<ViecCanLamA.ViewHolder> {
         return dsCongViec.size();
     }
 
-    private boolean toBool(int n) {
-        return n != 0; //1 = true; 0 = false
+    public void themCongViec(Bundle bundle) {
+        ViecCanLamM congViecMoi = new ViecCanLamM();
+        congViecMoi.ganCV(bundle.getString("congViec"));
+        congViecMoi.ganNgay(bundle.getString("ngay"));
+        congViecMoi.ganThoiGian(bundle.getString("thoiGian"));
+        int success = (int) db.themCongViec(congViecMoi);
+        db.moCSDL();
+        if (success != -1) {
+            congViecMoi.ganMaCV(success);
+            dsCongViec.add(congViecMoi);
+            notifyItemInserted(dsCongViec.indexOf(congViecMoi));
+            setAlarm(congViecMoi);
+        }
     }
 
-    public void themCongViec(ViecCanLamM congViecMoi) {
+    public void suaCongViec(Bundle bundle) {
+        int pos = bundle.getInt("soThuTu");
+        ViecCanLamM congViecMoi = new ViecCanLamM();
+        congViecMoi.ganMaCV(bundle.getInt("maCV"));
+        congViecMoi.ganCV(bundle.getString("congViec"));
+        congViecMoi.ganNgay(bundle.getString("ngay"));
+        congViecMoi.ganThoiGian(bundle.getString("thoiGian"));
         db.moCSDL();
-        int maCVmoi = (int) db.themCongViec(congViecMoi);
-        congViecMoi.ganMaCV(maCVmoi);
-        dsCongViec.add(congViecMoi);
-        notifyItemInserted(dsCongViec.indexOf(congViecMoi));
+        int success = db.suaCongViec(congViecMoi);
+        if (success == 1) {
+            dsCongViec.set(pos, congViecMoi);
+            notifyItemChanged(pos);
+            setAlarm(congViecMoi);
+        }
     }
 
-    public void suaCongViec(ViecCanLamM congViecCu, ViecCanLamM congViecMoi) {
+    public void xoaCongViec(int position) {
+        ViecCanLamM congViec = dsCongViec.get(position);
         db.moCSDL();
-        db.suaCongViec(congViecMoi);
-        dsCongViec.set(dsCongViec.indexOf(congViecCu), congViecMoi);
-        notifyItemChanged(dsCongViec.indexOf(congViecMoi));
-    }
-
-    public void xoaCongViec(ViecCanLamM congViec) {
-        db.moCSDL();
-        db.xoaBanGhi(congViec.layMaCV());
-        notifyItemRemoved(dsCongViec.indexOf(congViec));
-        dsCongViec.remove(congViec);
+        int success = db.xoaBanGhi(congViec.layMaCV());
+        if (success == 1) {
+            notifyItemRemoved(position);
+            dsCongViec.remove(position);
+            cancelAlarm(congViec);
+        }
     }
 
     public void ganDsCongViec(List<ViecCanLamM> dsCongViec) {
@@ -114,5 +128,32 @@ public class ViecCanLamA extends RecyclerView.Adapter<ViecCanLamA.ViewHolder> {
             textViewNgayGio = view.findViewById(R.id.textViewNgayGio);
             backgroundCongViec = view.findViewById(R.id.backgroundCongViec);
         }
+    }
+
+    public void setAlarm(ViecCanLamM congViec) {
+        AlarmManager alarmMgr = (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(activity, AlarmReceiver.class);
+        intent.putExtra("maCV", congViec.layMaCV());
+        intent.putExtra("congViec", congViec.layCV());
+        intent.putExtra("ngay", congViec.layNgay());
+        intent.putExtra("thoiGian", congViec.layThoiGian());
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(activity, congViec.layMaCV(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        String datetime = congViec.layNgay() + " " + congViec.layThoiGian();
+        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+        try {
+            Date datetimeParsed = dateFormat.parse(datetime);
+            alarmMgr.setExact(AlarmManager.RTC_WAKEUP, datetimeParsed.getTime(), pendingIntent);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void cancelAlarm(ViecCanLamM congViec) {
+        AlarmManager alarmMgr = (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
+        Intent myIntent = new Intent(activity, AlarmReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(activity,
+                congViec.layMaCV(), myIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+        pendingIntent.cancel();
+        alarmMgr.cancel(pendingIntent);
     }
 }

@@ -36,6 +36,7 @@
             android:text="dd/MM/yyyy HH:mm"
             android:textAlignment="textEnd"
             android:textSize="18sp" />
+
     </RelativeLayout>
 
 </androidx.cardview.widget.CardView>

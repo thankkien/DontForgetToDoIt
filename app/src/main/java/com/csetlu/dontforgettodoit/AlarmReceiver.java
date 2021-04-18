@@ -15,7 +15,6 @@ import androidx.core.app.NotificationCompat;
 public class AlarmReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-
         String channelId = "todonotify";
         Bundle bundle = intent.getExtras();
         int maCV = bundle.getInt("maCV");
@@ -42,6 +41,7 @@ public class AlarmReceiver extends BroadcastReceiver {
             notificationManager.createNotificationChannel(channel);
             notify.setChannelId(channelId);
         }
+
         Notification notification = notify.build();
         notificationManager.notify(maCV, notification);
     }

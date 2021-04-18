@@ -1,11 +1,7 @@
 package com.csetlu.dontforgettodoit;
 
-import android.app.AlarmManager;
 import android.app.DatePickerDialog;
-import android.app.PendingIntent;
 import android.app.TimePickerDialog;
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -21,23 +17,19 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.csetlu.dontforgettodoit.Adapter.ViecCanLamA;
-import com.csetlu.dontforgettodoit.Model.ViecCanLamM;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
-import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 
 public class AddNewActivity extends BottomSheetDialogFragment {
 
-    MainActivity activity;
-    ViecCanLamA adapter;
-    ViecCanLamM congViecMoi = new ViecCanLamM();
-    Button buttonSave;
-    EditText editTextCV;
-    TextView textViewDate, textViewTime;
+    private final MainActivity activity;
+    private final ViecCanLamA adapter;
+    private final Bundle congViecMoi = new Bundle();
+    private Button buttonSave;
+    private EditText editTextCV;
+    private TextView textViewDate, textViewTime;
 
     public AddNewActivity(MainActivity activity) {
         this.activity = activity;
@@ -49,7 +41,6 @@ public class AddNewActivity extends BottomSheetDialogFragment {
         super.onCreate(savedInstanceState);
     }
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.activity_add_new, container, false);
@@ -60,6 +51,10 @@ public class AddNewActivity extends BottomSheetDialogFragment {
         textViewDate = v.findViewById(R.id.editTextDate);
         textViewTime = v.findViewById(R.id.editTextTime);
 
+        return v;
+    }
+
+    public void onViewCreated(View view, Bundle savedInstanceState) {
         editTextCV.addTextChangedListener(new TextWatcher() {
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
@@ -68,10 +63,9 @@ public class AddNewActivity extends BottomSheetDialogFragment {
             }
 
             public void afterTextChanged(Editable s) {
-                congViecMoi.ganCV(editTextCV.getText().toString());
+                congViecMoi.putString("congViec", editTextCV.getText().toString());
             }
         });
-
         textViewDate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -85,13 +79,12 @@ public class AddNewActivity extends BottomSheetDialogFragment {
                         calendar.set(year, month, dayOfMonth);
                         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
                         textViewDate.setText(simpleDateFormat.format(calendar.getTime()));
-                        congViecMoi.ganNgay(textViewDate.getText().toString());
+                        congViecMoi.putString("ngay", textViewDate.getText().toString());
                     }
                 }, nam, thang, ngay);
                 datePickerDialog.show();
             }
         });
-
         textViewTime.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -104,13 +97,12 @@ public class AddNewActivity extends BottomSheetDialogFragment {
                         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm");
                         calendar.set(0, 0, 0, hourOfDay, minute);
                         textViewTime.setText(simpleDateFormat.format(calendar.getTime()));
-                        congViecMoi.ganThoiGian(textViewTime.getText().toString());
+                        congViecMoi.putString("thoiGian", textViewTime.getText().toString());
                     }
                 }, gio, phut, true);
                 timePickerDialog.show();
             }
         });
-
         buttonSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -122,29 +114,9 @@ public class AddNewActivity extends BottomSheetDialogFragment {
                     Toast.makeText(activity.getApplicationContext(), "Time must not be left blank", Toast.LENGTH_SHORT).show();
                 } else {
                     adapter.themCongViec(congViecMoi);
-                    setAlarm(congViecMoi);
                 }
                 dismiss();
             }
         });
-        return v;
-    }
-
-    public void setAlarm(ViecCanLamM congViec) {
-        AlarmManager alarmMgr = (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(activity, AlarmReceiver.class);
-        intent.putExtra("maCV", congViec.layMaCV());
-        intent.putExtra("congViec", congViec.layCV());
-        intent.putExtra("ngay", congViec.layNgay());
-        intent.putExtra("thoiGian", congViec.layThoiGian());
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(activity, congViec.layMaCV(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        String datetime = congViec.layNgay() + " " + congViec.layThoiGian();
-        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-        try {
-            Date datetimeParsed = dateFormat.parse(datetime);
-            alarmMgr.setExact(AlarmManager.RTC_WAKEUP, datetimeParsed.getTime(), pendingIntent);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
     }
 }
